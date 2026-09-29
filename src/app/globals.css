@@ -1,0 +1,239 @@
+@import "tailwindcss";
+@import "@heroui/styles/css";
+@import "@heroui/styles";
+:root {
+  --background: #fbf6e9;
+  --foreground: #171717;
+}
+html {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-thicccboi: var(--font-thicccboi);
+  --font-khmer: var(--font-kantumruy-pro);
+  --color-primary: #107446;
+  --color-secondary: #f9c156;
+  --color-accent: #e5a874;
+  --color-primary-heading: #2a2f33;
+  --color-secondary-body: #51585e;
+  --color-muted: #889299;
+  --color-light-grey: #e2e8f0;
+  --color-dark-grey: #1e2225;
+  --color-description-text: #51585e;
+  --color-border: #d2d9e3;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-thicccboi), var(--font-khmer);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.title-navbar {
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.sub-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.table-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.heading {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.description {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  box-shadow: 0 0 0px 1000px transparent inset !important;
+
+  -webkit-text-fill-color: #000 !important;
+
+  background-color: transparent !important;
+
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+:where(
+  a[href],
+  button:not(:disabled),
+  summary,
+  label[for],
+  [role="button"]:not([aria-disabled="true"])
+) {
+  cursor: pointer;
+}
+
+@keyframes fluid-glow {
+  0%,
+  100% {
+    transform: scale(1) translate(0px, 0px) rotate(0deg);
+    opacity: 0.2;
+  }
+  33% {
+    transform: scale(1.15) translate(40px, -30px) rotate(4deg);
+    opacity: 0.35;
+  }
+  66% {
+    transform: scale(0.9) translate(-25px, 20px) rotate(-4deg);
+    opacity: 0.15;
+  }
+}
+
+@keyframes card-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-fluid-glow {
+  animation: fluid-glow 20s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background-size: 200% 200%;
+  animation: card-shimmer 8s ease-in-out infinite;
+}
+
+.hide-native-calendar {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.hide-native-calendar::-webkit-clear-button,
+.hide-native-calendar::-webkit-calendar-picker-indicator,
+.hide-native-calendar::-webkit-inner-spin-button {
+  display: none;
+}
+
+.hide-native-calendar::-moz-calendar-picker-indicator {
+  display: none;
+}
+
+/* ── React Day Picker ───────────────────────────────── */
+
+.rdp {
+  --rdp-accent-color: #107446;
+  --rdp-range_middle-background-color: rgba(16, 116, 70, 0.12);
+
+  margin: 0;
+}
+.rdp-root {
+  --rdp-accent-color: #107446;
+}
+.rdp-months {
+  gap: 24px;
+}
+
+.rdp-caption_label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.rdp-head_cell {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.rdp-day {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+.rdp-today button {
+  color: #107446 !important;
+  font-weight: bolder; 
+}
+
+.rdp-day_button:hover {
+  background-color: #dcf7dc !important;
+  color: #107446 !important;
+}
+
+.rdp-selected {
+  background: #107446 !important;
+  color: white !important;
+}
+
+.rdp-range_middle {
+  background: rgba(16, 116, 70, 0.12) !important;
+  color: #107446 !important;
+}
+
+.rdp-selected button,
+.rdp-range_start button,
+.rdp-range_end button {
+  background: #107446 !important;
+  color: white !important;
+}
+
+.rdp-range_middle button {
+  background: rgba(16, 116, 70, 0.12) !important;
+  color: #107446 !important;
+}
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+
+/* Prevents horizontal scrolling across the entire page
+Any content that would extend beyond the viewport width is clipped/hidden instead of creating a horizontal scrollbar */
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}

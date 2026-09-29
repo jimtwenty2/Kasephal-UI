@@ -1,0 +1,17 @@
+services:
+  frontend:
+    image: ghcr.io/sora121367/kasephal-frontend:prod
+    container_name: kasephal-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+

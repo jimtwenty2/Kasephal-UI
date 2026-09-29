@@ -1,0 +1,48 @@
+import { UserRole } from "@/types/user-role";
+export const mockUsers = [
+  {
+    id: 1,
+    name: "Admin User",
+    email: "admin@gmail.com",
+    phone: "012345678",
+    password: "12345678",
+    role: UserRole.ADMIN,
+    profile: "/assets/nav-bar/profile.png",
+  },
+  {
+    id: 2,
+    name: "John Farmer",
+    email: "john@gmail.com",
+    phone: "098765432",
+    password: "john12345",
+    role: UserRole.FARMER,
+    profile: "/assets/nav-bar/profile.png",
+  },
+  {
+    id: 3,
+    name: "Sokha Buyer",
+    email: "sokha@gmail.com",
+    phone: "011223344",
+    password: "sokha123",
+    role: UserRole.BUYER,
+    profile: "/assets/nav-bar/profile.png",
+  },
+  {
+    id: 4,
+    name: "Dara Farmer",
+    email: "dara@gmail.com",
+    phone: "099887766",
+    password: "dara12345",
+    role: UserRole.FARMER,
+    profile: "/assets/nav-bar/profile.png",
+  },
+  {
+    id: 5,
+    name: "Linda Government",
+    email: "linda@gmail.com",
+    phone: "077665544",
+    password: "linda123",
+    role: UserRole.GOVERNMENT,
+    profile: "/assets/nav-bar/profile.png",
+  },
+];

@@ -1,0 +1,80 @@
+name: Telegram Notifications
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    types: [ opened, reopened, synchronize, closed ]
+  create:
+  delete:
+
+jobs:
+  notify:
+    name: Notify Telegram
+    runs-on: self-hosted
+    environment: SECRET_ENV
+
+    steps:
+      - name: Send Notification
+        shell: bash
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          THREAD_ID: ${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          SHA: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          escape_html() {
+            echo "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
+          }
+          REPO_URL="${SERVER_URL}/${REPOSITORY}"
+          WORKFLOW_URL="${REPO_URL}/actions/runs/${RUN_ID}"
+          MESSAGE=""
+          case "${EVENT_NAME}" in
+            push)
+              COMMIT_MSG=$(escape_html "${{ github.event.head_commit.message }}")
+              COMMIT_URL="${{ github.event.head_commit.url }}"
+              SHORT_SHA=$(echo "${SHA}" | cut -c1-7)
+              MESSAGE="<b>🚀 Push to ${REPOSITORY}</b>\n\n<b>User:</b> ${ACTOR}\n<b>Branch:</b> <code>${REF_NAME}</code>\n<b>Commit:</b> <a href=\"${COMMIT_URL}\">${SHORT_SHA}</a>\n<b>Message:</b> ${COMMIT_MSG}\n\n<a href=\"${WORKFLOW_URL}\">View Workflow</a>"
+              ;;
+            pull_request)
+              PR_NUM="${{ github.event.pull_request.number }}"
+              PR_TITLE=$(escape_html "${{ github.event.pull_request.title }}")
+              PR_URL="${{ github.event.pull_request.html_url }}"
+              PR_BODY=$(escape_html "${{ github.event.pull_request.body }}")
+              SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+              TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+              if [ ${#PR_BODY} -gt 500 ]; then PR_BODY="${PR_BODY:0:500}..."; fi
+              STATUS="${EVENT_ACTION}"
+              if [[ "${EVENT_ACTION}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then STATUS="merged"; fi
+              EMOJI="⚖️"
+              case "${STATUS}" in
+                opened) EMOJI="🆕" ;;
+                reopened) EMOJI="♻️" ;;
+                merged) EMOJI="💜" ;;
+                closed) EMOJI="❌" ;;
+                synchronize) EMOJI="🔄"; STATUS="updated" ;;
+              esac
+              MESSAGE="${EMOJI} <b>PR #${PR_NUM} ${STATUS^} in ${REPOSITORY}</b>\n\n<b>Title:</b> ${PR_TITLE}\n<b>User:</b> ${ACTOR}\n<b>Flow:</b> <code>${SOURCE_BRANCH}</code> → <code>${TARGET_BRANCH}</code>\n\n<b>Description:</b>\n${PR_BODY:-<i>No description provided.</i>}\n\n<a href=\"${PR_URL}\">View Pull Request</a> | <a href=\"${WORKFLOW_URL}\">View Workflow</a>"
+              ;;
+            create)
+              REF_TYPE="${{ github.event.ref_type }}"
+              MESSAGE="<b>✨ Created ${REF_TYPE} in ${REPOSITORY}</b>\n\n<b>User:</b> ${ACTOR}\n<b>Name:</b> <code>${REF_NAME}</code>\n\n<a href=\"${REPO_URL}\">View Repository</a>"
+              ;;
+            delete)
+              REF_TYPE="${{ github.event.ref_type }}"
+              MESSAGE="<b>🗑️ Deleted ${REF_TYPE} in ${REPOSITORY}</b>\n\n<b>User:</b> ${ACTOR}\n<b>Name:</b> <code>${REF_NAME}</code>"
+              ;;
+          esac
+          if [ -n "$MESSAGE" ]; then
+            API_URL="https://api.telegram.org/bot${BOT_TOKEN}/sendMessage"
+            PAYLOAD="chat_id=${CHAT_ID}&parse_mode=HTML"
+            if [ -n "${THREAD_ID}" ]; then PAYLOAD="${PAYLOAD}&message_thread_id=${THREAD_ID}"; fi
+            curl -s -X POST "$API_URL" -d "${PAYLOAD}" --data-urlencode "text=$(echo -e "$MESSAGE")"
+          fi

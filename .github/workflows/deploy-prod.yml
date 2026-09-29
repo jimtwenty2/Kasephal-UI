@@ -1,0 +1,285 @@
+name: Production Deploy - Frontend
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: prod-deploy-frontend
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    environment: SECRET_ENV
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --force
+
+      # - name: Lint application
+      #   run: npm run lint
+
+      - name: Build application
+        env:
+          NEXT_BASE_API_URL: ${{ vars.NEXT_BASE_API_URL }}
+          NEXT_PUBLIC_BASE_API_URL: ${{ vars.NEXT_PUBLIC_BASE_API_URL }}
+          NEXT_PUBLIC_IMAGE_BASE_URL: ${{ vars.NEXT_PUBLIC_IMAGE_BASE_URL }}
+          NEXT_PUBLIC_BASE_WS_URL: ${{ vars.NEXT_PUBLIC_BASE_WS_URL }}
+          IMAGE_BASE_URL: ${{ vars.IMAGE_BASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+        run: npm run build
+
+      - name: Telegram Build/Test Failure Notification
+        if: failure()
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="
+            ❌ <b>Frontend Build Failed</b>
+
+            Repository: <b>${{ github.repository }}</b>
+            Branch: <b>${{ github.ref_name }}</b>
+            Actor: <b>${{ github.actor }}</b>
+
+            Commit:
+            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+
+            Message:
+            <code>${{ github.event.head_commit.message }}</code>
+
+            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            View Workflow Run
+            </a>
+            "
+
+  docker-build-push:
+    runs-on: self-hosted
+    timeout-minutes: 30
+    needs: build-test
+    environment: SECRET_ENV
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USER }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/sora121367/kasephal-frontend:prod
+            ghcr.io/sora121367/kasephal-frontend:${{ github.sha }}
+          build-args: |
+            NEXT_BASE_API_URL=${{ vars.NEXT_BASE_API_URL }}
+            NEXT_PUBLIC_BASE_API_URL=${{ vars.NEXT_PUBLIC_BASE_API_URL }}
+            IMAGE_BASE_URL=${{ vars.IMAGE_BASE_URL }}
+            NEXT_PUBLIC_IMAGE_BASE_URL=${{ vars.NEXT_PUBLIC_IMAGE_BASE_URL }}
+            NEXT_PUBLIC_BASE_WS_URL=${{ vars.NEXT_PUBLIC_BASE_WS_URL }}
+            BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+            AUTH_URL=https://kasephal-ui.detronic11.win
+            AUTH_TRUST_HOST=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Telegram Docker Failure Notification
+        if: failure()
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="
+            🐳 <b>Frontend Docker Build Failed</b>
+
+            Repository: <b>${{ github.repository }}</b>
+            Branch: <b>${{ github.ref_name }}</b>
+            Actor: <b>${{ github.actor }}</b>
+
+            Commit:
+            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+
+            Message:
+            <code>${{ github.event.head_commit.message }}</code>
+
+            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            View Workflow Run
+            </a>
+            "
+  deploy:
+    runs-on: self-hosted
+    timeout-minutes: 20
+    needs: docker-build-push
+    environment: SECRET_ENV
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: "/opt/app/staging-kasephal-frontend"
+
+      - name: Deploy application via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            APP_DIR=/opt/app/staging-kasephal-frontend
+
+            mkdir -p $APP_DIR
+
+            cd $APP_DIR
+
+            echo "Creating .env..."
+
+            cat > .env <<EOF
+            NODE_ENV=production
+            NEXT_BASE_API_URL=${{ vars.NEXT_BASE_API_URL }}
+            NEXT_PUBLIC_BASE_API_URL=${{ vars.NEXT_PUBLIC_BASE_API_URL }}
+            IMAGE_BASE_URL=${{ vars.IMAGE_BASE_URL }}
+            NEXT_PUBLIC_IMAGE_BASE_URL=${{ vars.NEXT_PUBLIC_IMAGE_BASE_URL }}
+            NEXT_PUBLIC_BASE_WS_URL=${{ vars.NEXT_PUBLIC_BASE_WS_URL }}
+            BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+            AUTH_URL=https://kasephal-ui.detronic11.win
+            AUTH_TRUST_HOST=true
+            PORT=3000
+            EOF
+
+            echo "Logging into GHCR..."
+
+            echo "${{ secrets.GHCR_TOKEN }}" | \
+              docker login ghcr.io \
+              -u "${{ secrets.GHCR_USER }}" \
+              --password-stdin
+
+            echo "Pulling latest images..."
+
+            docker compose down
+
+            docker compose pull
+
+            docker compose up -d --remove-orphans
+
+            echo "Cleaning unused images..."
+
+            docker image prune -f
+
+            echo "Waiting for frontend healthcheck..."
+
+            for i in $(seq 1 30); do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                http://localhost:3000 || true)
+
+              if [ "$STATUS" = "200" ]; then
+                echo "Frontend healthy"
+
+                docker compose ps
+
+                exit 0
+              fi
+
+              echo "Attempt $i failed with status $STATUS"
+
+              sleep 5
+            done
+
+            echo "Frontend failed healthcheck"
+
+            docker compose logs
+
+            exit 1
+
+      - name: Telegram Success Notification
+        if: success()
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="
+            ✅ <b>Frontend Production Deploy Successful</b>
+
+            Repository: <b>${{ github.repository }}</b>
+            Branch: <b>${{ github.ref_name }}</b>
+            Actor: <b>${{ github.actor }}</b>
+
+            Commit:
+            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+
+            Message:
+            <code>${{ github.event.head_commit.message }}</code>
+
+            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            View Workflow Run
+            </a>
+            "
+
+      - name: Telegram Deploy Failure Notification
+        if: failure()
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
+            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="
+            ❌ <b>Frontend Production Deploy Failed</b>
+
+            Repository: <b>${{ github.repository }}</b>
+            Branch: <b>${{ github.ref_name }}</b>
+            Actor: <b>${{ github.actor }}</b>
+
+            Commit:
+            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+
+            Message:
+            <code>${{ github.event.head_commit.message }}</code>
+
+            Check logs immediately.
+
+            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            View Workflow Run
+            </a>
+            "
