@@ -944,7 +944,16 @@ export default function CreateCropDemandForm({
 
                 {/* Dynamic Drag and Drop Container Interface */}
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label={t("demandForm.addPhotos")}
                   onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
                   onDragOver={(e) => {
                     e.preventDefault();
                     setIsDragging(true);
@@ -1051,13 +1060,15 @@ export default function CreateCropDemandForm({
                   {Array.from({
                     length: Math.max(0, 4 - Math.max(0, imageItems.length - 1)),
                   }).map((_, i) => (
-                    <div
+                    <button
                       key={i}
+                      type="button"
+                      aria-label={t("demandForm.addPhotos")}
                       onClick={() => fileInputRef.current?.click()}
                       className="title flex aspect-square cursor-pointer items-center justify-center rounded-lg border border-dashed border-light-grey bg-[#fbfbfb] text-muted hover:bg-gray-50"
                     >
                       +
-                    </div>
+                    </button>
                   ))}
                 </div>
 

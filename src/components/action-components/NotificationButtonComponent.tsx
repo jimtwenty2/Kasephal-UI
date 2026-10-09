@@ -557,10 +557,7 @@ export default function NotificationButtonComponent({
       ? "relative flex h-10 w-10 items-center justify-center rounded-xl bg-stone-100 text-[#3A3A3A] transition hover:bg-stone-200"
       : "relative flex w-10 h-10 items-center justify-center rounded-xl bg-white/90 transition hover:bg-white";
 
-  const bellClass =
-    variant === "admin"
-      ? "h-6 w-6 stroke-[2.3] text-[#3A3A3A]"
-      : "h-6 w-6 stroke-[2.3] text-[#3A3A3A]";
+  const bellClass = "h-6 w-6 stroke-[2.3] text-[#3A3A3A]";
 
   const badgeClass =
     variant === "admin"

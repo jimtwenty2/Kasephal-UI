@@ -189,7 +189,9 @@ export async function getOrderByIdService(id: string): Promise<Order | null> {
 
         if (!res.ok || !data.success || !data.payload) {
             console.error(
-                `Order detail API error: GET /orders/${id} -> HTTP ${res.status}`,
+                "Order detail API error: GET /orders/%s -> HTTP %s",
+                id,
+                res.status,
                 data,
             );
             return null;

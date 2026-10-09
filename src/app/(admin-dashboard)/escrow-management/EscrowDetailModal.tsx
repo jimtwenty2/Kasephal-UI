@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { formatAdminId } from "@/utils/formatAdminId";
 import type { AdminEscrowListItem } from "@/types/admin/escrow";
@@ -52,6 +53,15 @@ export default function EscrowDetailModal({
 }: EscrowDetailModalProps) {
   useBodyScrollLock(isOpen && !!data);
 
+  useEffect(() => {
+    if (!isOpen || !data) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, data, onClose]);
+
   if (!isOpen || !data) return null;
 
   const statusBadgeColors = {
@@ -62,7 +72,12 @@ export default function EscrowDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="absolute inset-0" onClick={onClose} />
+      <button
+        type="button"
+        aria-label="Close escrow details"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+      />
       <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-slate-50 px-6 pb-4 pt-6">
           <h2 className="text-2xl font-bold text-slate-800">

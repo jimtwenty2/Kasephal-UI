@@ -204,12 +204,9 @@ async function getRatings(
   currentUserId?: string,
   ownProfile?: UserProfilePayload | null,
 ): Promise<ProfileReviewItem[]> {
-  const reviewRole =
-    role === "farmer"
-      ? "farmer"
-      : role === "buyer" || role === "government"
-        ? "buyer"
-        : "buyer";
+  // Reviews are fetched per role bucket: farmers keep their own bucket and
+  // every other profile role (buyer, government) maps to the buyer bucket.
+  const reviewRole = role === "farmer" ? "farmer" : "buyer";
 
   const result = await getReviewsByUserIdService(userId, reviewRole);
 

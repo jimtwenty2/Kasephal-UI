@@ -29,6 +29,16 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           SERVER_URL: ${{ github.server_url }}
           RUN_ID: ${{ github.run_id }}
+          COMMIT_MSG_RAW: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_TITLE_RAW: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BODY_RAW: ${{ github.event.pull_request.body }}
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          REF_TYPE: ${{ github.event.ref_type }}
         run: |
           escape_html() {
             echo "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
@@ -38,21 +48,16 @@ jobs:
           MESSAGE=""
           case "${EVENT_NAME}" in
             push)
-              COMMIT_MSG=$(escape_html "${{ github.event.head_commit.message }}")
-              COMMIT_URL="${{ github.event.head_commit.url }}"
+              COMMIT_MSG=$(escape_html "${COMMIT_MSG_RAW}")
               SHORT_SHA=$(echo "${SHA}" | cut -c1-7)
               MESSAGE="<b>🚀 Push to ${REPOSITORY}</b>\n\n<b>User:</b> ${ACTOR}\n<b>Branch:</b> <code>${REF_NAME}</code>\n<b>Commit:</b> <a href=\"${COMMIT_URL}\">${SHORT_SHA}</a>\n<b>Message:</b> ${COMMIT_MSG}\n\n<a href=\"${WORKFLOW_URL}\">View Workflow</a>"
               ;;
             pull_request)
-              PR_NUM="${{ github.event.pull_request.number }}"
-              PR_TITLE=$(escape_html "${{ github.event.pull_request.title }}")
-              PR_URL="${{ github.event.pull_request.html_url }}"
-              PR_BODY=$(escape_html "${{ github.event.pull_request.body }}")
-              SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
-              TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+              PR_TITLE=$(escape_html "${PR_TITLE_RAW}")
+              PR_BODY=$(escape_html "${PR_BODY_RAW}")
               if [ ${#PR_BODY} -gt 500 ]; then PR_BODY="${PR_BODY:0:500}..."; fi
               STATUS="${EVENT_ACTION}"
-              if [[ "${EVENT_ACTION}" == "closed" && "${{ github.event.pull_request.merged }}" == "true" ]]; then STATUS="merged"; fi
+              if [[ "${EVENT_ACTION}" == "closed" && "${PR_MERGED}" == "true" ]]; then STATUS="merged"; fi
               EMOJI="⚖️"
               case "${STATUS}" in
                 opened) EMOJI="🆕" ;;
@@ -64,11 +69,9 @@ jobs:
               MESSAGE="${EMOJI} <b>PR #${PR_NUM} ${STATUS^} in ${REPOSITORY}</b>\n\n<b>Title:</b> ${PR_TITLE}\n<b>User:</b> ${ACTOR}\n<b>Flow:</b> <code>${SOURCE_BRANCH}</code> → <code>${TARGET_BRANCH}</code>\n\n<b>Description:</b>\n${PR_BODY:-<i>No description provided.</i>}\n\n<a href=\"${PR_URL}\">View Pull Request</a> | <a href=\"${WORKFLOW_URL}\">View Workflow</a>"
               ;;
             create)
-              REF_TYPE="${{ github.event.ref_type }}"
               MESSAGE="<b>✨ Created ${REF_TYPE} in ${REPOSITORY}</b>\n\n<b>User:</b> ${ACTOR}\n<b>Name:</b> <code>${REF_NAME}</code>\n\n<a href=\"${REPO_URL}\">View Repository</a>"
               ;;
             delete)
-              REF_TYPE="${{ github.event.ref_type }}"
               MESSAGE="<b>🗑️ Deleted ${REF_TYPE} in ${REPOSITORY}</b>\n\n<b>User:</b> ${ACTOR}\n<b>Name:</b> <code>${REF_NAME}</code>"
               ;;
           esac

@@ -783,6 +783,7 @@ export default function CreateOrderWithoutContractForm(props: Props) {
             </Link>
 
             <button
+              type="submit"
               disabled={
                 isPending ||
                 safeStockLeft <= 0 ||

@@ -213,11 +213,7 @@ export function DatePickerComponent({
             >
               {({ monthYear }) => (
                 <>
-                  <span
-                    className={`min-w-0 truncate font-semibold text-slate-900 ${
-                      isLargeCalendar ? "text-[16px]" : "text-[16px]"
-                    }`}
-                  >
+                  <span className="min-w-0 truncate text-[16px] font-semibold text-slate-900">
                     {getMonthYearText(monthYear)}
                   </span>
 
@@ -231,16 +227,12 @@ export function DatePickerComponent({
             <div className={`flex items-center ${isLargeCalendar ? "gap-2" : "gap-1"}`}>
               <Calendar.NavButton
                 slot="previous"
-                className={`flex items-center justify-center rounded-full text-emerald-600 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 ${
-                  isLargeCalendar ? "h-8 w-8" : "h-8 w-8"
-                }`}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-600 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
               />
 
               <Calendar.NavButton
                 slot="next"
-                className={`flex items-center justify-center rounded-full text-emerald-600 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 ${
-                  isLargeCalendar ? "h-8 w-8" : "h-8 w-8"
-                }`}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-emerald-600 transition-colors hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
               />
             </div>
           </Calendar.Header>
@@ -255,9 +247,7 @@ export function DatePickerComponent({
             <Calendar.GridHeader>
               {(day) => (
                 <Calendar.HeaderCell
-                  className={`text-center font-semibold text-slate-400 ${
-                    isLargeCalendar ? "h-8 text-[12px]" : "h-8 text-[12px]"
-                  }`}
+                  className="h-8 text-center text-[12px] font-semibold text-slate-400"
                 >
                   {day.slice(0, 2)}
                 </Calendar.HeaderCell>
@@ -268,9 +258,7 @@ export function DatePickerComponent({
               {(date) => (
                 <Calendar.Cell
                   date={date}
-                  className={`rounded-full font-semibold text-slate-900 transition-all duration-150 hover:bg-emerald-50 hover:text-emerald-600 data-disabled:cursor-not-allowed data-disabled:text-slate-200 data-outside-month:text-slate-300 data-selected:bg-emerald-600 data-selected:text-white data-today:text-emerald-600 data-selected:data-today:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35 ${
-                    isLargeCalendar ? "h-9 w-9 text-[14px]" : "h-9 w-9 text-[14px]"
-                  }`}
+                  className="h-9 w-9 rounded-full text-[14px] font-semibold text-slate-900 transition-all duration-150 hover:bg-emerald-50 hover:text-emerald-600 data-disabled:cursor-not-allowed data-disabled:text-slate-200 data-outside-month:text-slate-300 data-selected:bg-emerald-600 data-selected:text-white data-today:text-emerald-600 data-selected:data-today:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35"
                 />
               )}
             </Calendar.GridBody>
@@ -285,9 +273,7 @@ export function DatePickerComponent({
               {({ year }) => (
                 <Calendar.YearPickerCell
                   year={year}
-                  className={`rounded-xl text-center font-semibold text-slate-900 transition-colors hover:bg-emerald-50 hover:text-emerald-600 data-selected:bg-emerald-600 data-selected:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 ${
-                    isLargeCalendar ? "px-3 py-2 text-[14px]" : "px-3 py-2 text-[14px]"
-                  }`}
+                  className="rounded-xl px-3 py-2 text-center text-[14px] font-semibold text-slate-900 transition-colors hover:bg-emerald-50 hover:text-emerald-600 data-selected:bg-emerald-600 data-selected:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                 />
               )}
             </Calendar.YearPickerGridBody>

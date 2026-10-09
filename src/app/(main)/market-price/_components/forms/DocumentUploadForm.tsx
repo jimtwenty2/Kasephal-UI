@@ -196,7 +196,17 @@ export default function DocumentUploadForm({
       noValidate
     >
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={t("market.form.chooseFile")}
         onClick={() => fileInputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return;
+          if (e.key !== "Enter" && e.key !== " ") return;
+
+          e.preventDefault();
+          fileInputRef.current?.click();
+        }}
         onDragEnter={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -218,7 +228,7 @@ export default function DocumentUploadForm({
 
           handleFileSelect(file);
         }}
-        className={`mb-6 flex h-55 cursor-pointer flex-col items-center justify-center rounded-4xl border-2 border-dashed px-5 text-center transition-all
+        className={`mb-6 flex h-55 cursor-pointer flex-col items-center justify-center rounded-4xl border-2 border-dashed px-5 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
     ${isDragging ? "border-primary bg-primary/5" : "border-[#CBD2E1]"}
   `}
       >

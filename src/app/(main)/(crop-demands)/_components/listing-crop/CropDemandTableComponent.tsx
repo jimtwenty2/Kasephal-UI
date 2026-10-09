@@ -1257,10 +1257,18 @@ export default function CropDemandListingsPage({
             return (
               <div
                 key={detailId}
+                role="link"
+                tabIndex={0}
                 onClick={() =>
                   router.push(`/listing-crop-demands/${detailId}`)
                 }
-                className="relative flex w-full min-w-0 cursor-pointer gap-4 rounded-xl border border-light-grey bg-white p-4 shadow-xs transition-colors hover:bg-gray-50"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    router.push(`/listing-crop-demands/${detailId}`);
+                  }
+                }}
+                className="relative flex w-full min-w-0 cursor-pointer gap-4 rounded-xl border border-light-grey bg-white p-4 shadow-xs transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
               >
               <span className="absolute right-3 top-3 rounded-full bg-gray-100 px-2 py-0.5 text-[14px] font-medium text-muted sub-title">
                 #{(paginationState.page - 1) * itemsPerPage + index + 1}

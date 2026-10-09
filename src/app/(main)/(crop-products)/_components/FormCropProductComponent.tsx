@@ -906,7 +906,16 @@ export default function CreateCropListingForm({
               </h3>
 
               <div
+                role="button"
+                tabIndex={0}
+                aria-label={t("productForm.addPhotos")}
                 onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
                 onDragOver={(event) => {
                   event.preventDefault();
                   setIsDragging(true);

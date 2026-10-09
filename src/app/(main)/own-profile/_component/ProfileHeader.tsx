@@ -418,9 +418,7 @@ useEffect(() => {
           {isCheckingStatus
             ? t("profile.checking")
             : isPending
-              ? isFollowing
-                ? t("profile.followingProgress")
-                : t("profile.followingProgress")
+              ? t("profile.followingProgress")
               : isFollowing
                 ? t("profile.following")
                 : t("profile.follow")}

@@ -393,6 +393,19 @@ export default function ChatDetail({
     });
   }, [messages, typingUserName]);
 
+  useEffect(() => {
+    if (!productPickerOpen) return;
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setProductPickerOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [productPickerOpen]);
+
 
   const socketHandlersRef = useRef({
     currentUserId,
@@ -1336,6 +1349,7 @@ export default function ChatDetail({
       {productPickerOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6"
+          role="presentation"
           onClick={() => setProductPickerOpen(false)}
         >
           <section

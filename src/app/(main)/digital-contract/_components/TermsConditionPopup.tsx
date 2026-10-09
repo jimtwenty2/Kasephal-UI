@@ -2,6 +2,7 @@
 
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
@@ -46,6 +47,18 @@ const TERMS = [
 
 export default function TermsConditionPopup({ open, onClose }: Props) {
   useBodyScrollLock(open);
+
+  // Close on Escape while the popup is open.
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, open]);
 
   if (!open || typeof document === "undefined") return null;
 

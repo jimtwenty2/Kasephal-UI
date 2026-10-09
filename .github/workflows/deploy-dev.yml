@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 22
           cache: npm
@@ -48,26 +48,33 @@ jobs:
 
       - name: Telegram Build/Test Failure Notification
         if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+
           curl -s -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
-            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode chat_id="${TELEGRAM_CHAT_ID}" \
+            --data-urlencode message_thread_id="${TELEGRAM_MESSAGE_THREAD_ID}" \
+            --data-urlencode parse_mode="HTML" \
+            --data-urlencode text="
             ❌ <b>Frontend Build Failed</b>
 
-            Repository: <b>${{ github.repository }}</b>
-            Branch: <b>${{ github.ref_name }}</b>
-            Actor: <b>${{ github.actor }}</b>
+            Repository: <b>${GITHUB_REPOSITORY}</b>
+            Branch: <b>${GITHUB_REF_NAME}</b>
+            Actor: <b>${GITHUB_ACTOR}</b>
 
             Commit:
-            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+            <code>${SHORT_SHA}</code>
 
             Message:
-            <code>${{ github.event.head_commit.message }}</code>
+            <code>${COMMIT_MESSAGE}</code>
 
-            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>
             View Workflow Run
             </a>
             "
@@ -80,20 +87,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USER }}
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
           file: Dockerfile
@@ -107,34 +114,42 @@ jobs:
             IMAGE_BASE_URL=${{ vars.IMAGE_BASE_URL }}
             NEXT_PUBLIC_IMAGE_BASE_URL=${{ vars.NEXT_PUBLIC_IMAGE_BASE_URL }}
             NEXT_PUBLIC_BASE_WS_URL=${{ vars.NEXT_PUBLIC_BASE_WS_URL }}
-            BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
             AUTH_URL=${{ vars.AUTH_URL }}
             AUTH_TRUST_HOST=true
+          # BETTER_AUTH_SECRET is intentionally NOT passed as a build arg; it is
+          # injected at runtime through the container environment (docker-compose.dev.yml).
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Telegram Docker Failure Notification
         if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+
           curl -s -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
-            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode chat_id="${TELEGRAM_CHAT_ID}" \
+            --data-urlencode message_thread_id="${TELEGRAM_MESSAGE_THREAD_ID}" \
+            --data-urlencode parse_mode="HTML" \
+            --data-urlencode text="
             🐳 <b>Frontend Docker Build Failed</b>
 
-            Repository: <b>${{ github.repository }}</b>
-            Branch: <b>${{ github.ref_name }}</b>
-            Actor: <b>${{ github.actor }}</b>
+            Repository: <b>${GITHUB_REPOSITORY}</b>
+            Branch: <b>${GITHUB_REF_NAME}</b>
+            Actor: <b>${GITHUB_ACTOR}</b>
 
             Commit:
-            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+            <code>${SHORT_SHA}</code>
 
             Message:
-            <code>${{ github.event.head_commit.message }}</code>
+            <code>${COMMIT_MESSAGE}</code>
 
-            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>
             View Workflow Run
             </a>
             "
@@ -146,10 +161,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Copy docker-compose.dev.yml to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -158,7 +173,7 @@ jobs:
           target: "/opt/app/dev-kasephal-frontend"
 
       - name: Deploy application via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -233,54 +248,68 @@ jobs:
 
       - name: Telegram Success Notification
         if: success()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+
           curl -s -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
-            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode chat_id="${TELEGRAM_CHAT_ID}" \
+            --data-urlencode message_thread_id="${TELEGRAM_MESSAGE_THREAD_ID}" \
+            --data-urlencode parse_mode="HTML" \
+            --data-urlencode text="
             ✅ <b>Frontend Dev Deploy Successful</b>
 
-            Repository: <b>${{ github.repository }}</b>
-            Branch: <b>${{ github.ref_name }}</b>
-            Actor: <b>${{ github.actor }}</b>
+            Repository: <b>${GITHUB_REPOSITORY}</b>
+            Branch: <b>${GITHUB_REF_NAME}</b>
+            Actor: <b>${GITHUB_ACTOR}</b>
 
             Commit:
-            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+            <code>${SHORT_SHA}</code>
 
             Message:
-            <code>${{ github.event.head_commit.message }}</code>
+            <code>${COMMIT_MESSAGE}</code>
 
-            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>
             View Workflow Run
             </a>
             "
 
       - name: Telegram Deploy Failure Notification
         if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+
           curl -s -X POST \
-            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ vars.TELEGRAM_CHAT_ID }}" \
-            -d message_thread_id="${{ vars.TELEGRAM_MESSAGE_THREAD_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode chat_id="${TELEGRAM_CHAT_ID}" \
+            --data-urlencode message_thread_id="${TELEGRAM_MESSAGE_THREAD_ID}" \
+            --data-urlencode parse_mode="HTML" \
+            --data-urlencode text="
             ❌ <b>Frontend Dev Deploy Failed</b>
 
-            Repository: <b>${{ github.repository }}</b>
-            Branch: <b>${{ github.ref_name }}</b>
-            Actor: <b>${{ github.actor }}</b>
+            Repository: <b>${GITHUB_REPOSITORY}</b>
+            Branch: <b>${GITHUB_REF_NAME}</b>
+            Actor: <b>${GITHUB_ACTOR}</b>
 
             Commit:
-            <code>$(echo '${{ github.sha }}' | cut -c1-7)</code>
+            <code>${SHORT_SHA}</code>
 
             Message:
-            <code>${{ github.event.head_commit.message }}</code>
+            <code>${COMMIT_MESSAGE}</code>
 
             Check logs immediately.
 
-            <a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>
+            <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>
             View Workflow Run
             </a>
             "

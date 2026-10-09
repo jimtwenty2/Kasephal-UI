@@ -379,7 +379,7 @@ export default function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                   >
                     {t("colCropName", lang)}
                     {colSort.key === "cropName" ? (
-                      colSort.dir === "asc" ? <ChevronsUpDown className="h-3.5 w-3.5" /> : <ChevronsUpDown className="h-3.5 w-3.5" />
+                      colSort.dir === "asc" ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />
                     ) : (
                       <ChevronsUpDown className="h-3.5 w-3.5 opacity-40" />
                     )}
@@ -394,7 +394,7 @@ export default function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                   >
                     {t("colTotal", lang)}
                     {colSort.key === "totalAmount" ? (
-                      colSort.dir === "asc" ? <ChevronsUpDown className="h-3.5 w-3.5" /> : <ChevronsUpDown className="h-3.5 w-3.5" />
+                      colSort.dir === "asc" ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />
                     ) : (
                       <ChevronsUpDown className="h-3.5 w-3.5 opacity-40" />
                     )}
@@ -416,7 +416,7 @@ export default function OrderHistoryTable({ orders }: OrderHistoryTableProps) {
                   >
                     {t("colCreated", lang)}
                     {colSort.key === "createdAt" ? (
-                      colSort.dir === "asc" ? <ChevronsUpDown className="h-3.5 w-3.5" /> : <ChevronsUpDown className="h-3.5 w-3.5" />
+                      colSort.dir === "asc" ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />
                     ) : (
                       <ChevronsUpDown className="h-3.5 w-3.5 opacity-40" />
                     )}
